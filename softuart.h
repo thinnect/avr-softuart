@@ -3,7 +3,9 @@
     #define F_CPU 3686400UL
 #endif
 
+#ifndef SOFTUART_BAUD_RATE
 #define SOFTUART_BAUD_RATE      2400
+#endif
 
 #if defined (__AVR_ATtiny25__) || defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__)
     #define SOFTUART_RXPIN   PINB
@@ -123,7 +125,9 @@
     #warning "Check SOFTUART_TIMERTOP: increase prescaler, lower F_CPU or use a 16 bit timer"
 #endif
 
-#define SOFTUART_IN_BUF_SIZE     32
+#ifndef SOFTUART_IN_BUF_SIZE
+#define SOFTUART_IN_BUF_SIZE     64
+#endif
 
 // Init the Software Uart
 void softuart_init(volatile uint8_t *tx_port, uint8_t tx_pin,
