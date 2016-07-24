@@ -128,6 +128,9 @@
 // Init the Software Uart
 void softuart_init(void);
 
+// Release the Software Uart
+void softuart_release();
+
 // Clears the contents of the input buffer.
 void softuart_flush_input_buffer( void );
 

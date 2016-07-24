@@ -264,12 +264,19 @@ static inline void timer_init(void)
   SOFTUART_T_INTCTL_REG |= SOFTUART_CMPINT_EN_MASK;
 
 	SOFTUART_T_CNT_REG = 0; /* reset counter */
-	
-	SREG = sreg_tmp;
+	/* SREG = sreg_tmp; */
+}
+
+static inline void timer_release()
+{
+	/* disable timer interrupt */
+	SOFTUART_T_INTCTL_REG &= ~SOFTUART_CMPINT_EN_MASK;
 }
 
 void softuart_init( void )
 {
+	timer_release();
+
 	flag_tx_busy  = SU_FALSE;
 	flag_rx_ready = SU_FALSE;
 	flag_rx_off   = SU_FALSE;
@@ -280,7 +287,12 @@ void softuart_init( void )
 	timer_init();
 }
 
-static void idle(void)
+void softuart_release()
+{
+  timer_release();
+}
+
+static inline void idle(void)
 {
 	// timeout handling goes here 
 	// - but there is a "softuart_kbhit" in this code...
