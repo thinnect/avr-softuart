@@ -250,19 +250,18 @@ static void io_init(void)
 	SOFTUART_RXDDR &= ~( 1 << SOFTUART_RXBIT );
 }
 
-static void timer_init(void)
+static inline void timer_init(void)
 {
-	unsigned char sreg_tmp;
-	
-	sreg_tmp = SREG;
-	cli();
-	
+	/* unsigned char sreg_tmp = SREG; cli(); */
 	SOFTUART_T_COMP_REG = SOFTUART_TIMERTOP;     /* set top */
 
 	SOFTUART_T_CONTR_REGA = SOFTUART_CTC_MASKA | SOFTUART_PRESC_MASKA;
+#if (SOFTUART_HAS_SEPARATE_COMPARE_UNITS)
 	SOFTUART_T_CONTR_REGB = SOFTUART_CTC_MASKB | SOFTUART_PRESC_MASKB;
-
-	SOFTUART_T_INTCTL_REG |= SOFTUART_CMPINT_EN_MASK;
+#else
+  SOFTUART_T_CONTR_REGB |= SOFTUART_CTC_MASKB | SOFTUART_PRESC_MASKB;
+#endif
+  SOFTUART_T_INTCTL_REG |= SOFTUART_CMPINT_EN_MASK;
 
 	SOFTUART_T_CNT_REG = 0; /* reset counter */
 	
