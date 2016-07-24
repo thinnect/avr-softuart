@@ -81,11 +81,17 @@ int main(void)
 #else 
 #define CNTHALLO (unsigned int)(0xFFFF/3)
 #endif
+    sei();
 
-	softuart_init();
+	softuart_init(&PORTD, 2, &PORTD, 3);
 	softuart_turn_rx_on(); /* redundant - on by default */
-	
-	sei();
+
+	softuart_puts_P( "\r\nSoftuart Demo-Application\r\n" );    // "implicit" PSTR
+	softuart_puts_p( PSTR("generic softuart driver code by Colin Gittins\r\n") ); // explicit PSTR
+	softuart_puts_p( pstring ); // pstring defined with PROGMEM
+	softuart_puts( "--\r\n" );  // string "from RAM"
+
+	softuart_init(&PORTD, 0, &PORTD, 1);
 
 	softuart_puts_P( "\r\nSoftuart Demo-Application\r\n" );    // "implicit" PSTR
 	softuart_puts_p( PSTR("generic softuart driver code by Colin Gittins\r\n") ); // explicit PSTR

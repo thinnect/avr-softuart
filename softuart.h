@@ -126,8 +126,8 @@
 #define SOFTUART_IN_BUF_SIZE     32
 
 // Init the Software Uart
-void softuart_init(void);
-
+void softuart_init(volatile uint8_t *tx_port, uint8_t tx_pin,
+                   volatile uint8_t *rx_port, uint8_t rx_pin);
 // Release the Software Uart
 void softuart_release();
 

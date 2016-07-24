@@ -137,6 +137,7 @@ V0.4 (10/2010)
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
+#include <stdbool.h>
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -162,9 +163,34 @@ volatile static unsigned char  timer_tx_ctr;
 volatile static unsigned char  bits_left_in_tx;
 volatile static unsigned short internal_tx_buffer; /* ! mt: was type uchar - this was wrong */
 
-#define set_tx_pin_high()      ( SOFTUART_TXPORT |=  ( 1 << SOFTUART_TXBIT ) )
-#define set_tx_pin_low()       ( SOFTUART_TXPORT &= ~( 1 << SOFTUART_TXBIT ) )
-#define get_rx_pin_status()    ( SOFTUART_RXPIN  &   ( 1 << SOFTUART_RXBIT ) )
+volatile static uint8_t * tx_port;
+volatile static uint8_t   tx_pin;
+
+volatile static uint8_t * rx_port;
+volatile static uint8_t   rx_pin;
+
+#define DDR(x) (*(&x - 1))      /* address of data direction register of port x */
+#if defined(__AVR_ATmega64__) || defined(__AVR_ATmega128__)
+/* on ATmega64/128 PINF is on port 0x00 and not 0x60 */
+#define PIN(x) ( &PORTF==&(x) ? _SFR_IO8(0x00) : (*(&x - 2)) )
+#else
+#define PIN(x) (*(&x - 2))    /* address of input register of port x          */
+#endif
+
+static inline void set_tx_pin_high(void)
+{
+  *tx_port |=  ( 1 << tx_pin );
+}
+
+static inline void set_tx_pin_low(void)
+{
+  *tx_port &= ~( 1 << tx_pin );
+}
+
+static inline bool get_rx_pin_status()
+{
+  return PIN(*rx_port) &  ( 1 << rx_pin );
+}
 
 ISR(SOFTUART_T_COMP_LABEL)
 {
@@ -242,12 +268,12 @@ ISR(SOFTUART_T_COMP_LABEL)
 	}
 }
 
-static void io_init(void)
+static inline void io_init(void)
 {
 	// TX-Pin as output
-	SOFTUART_TXDDR |=  ( 1 << SOFTUART_TXBIT );
+	DDR(*tx_port) |=  ( 1 << tx_pin );
 	// RX-Pin as input
-	SOFTUART_RXDDR &= ~( 1 << SOFTUART_RXBIT );
+	DDR(*rx_port) &= ~( 1 << rx_pin );
 }
 
 static inline void timer_init(void)
@@ -273,9 +299,13 @@ static inline void timer_release()
 	SOFTUART_T_INTCTL_REG &= ~SOFTUART_CMPINT_EN_MASK;
 }
 
-void softuart_init( void )
+void softuart_init(volatile uint8_t *txport, uint8_t txpin,
+                   volatile uint8_t *rxport, uint8_t rxpin)
 {
 	timer_release();
+
+	tx_port = txport; tx_pin = txpin;
+  rx_port = rxport; rx_pin = rxpin;
 
 	flag_tx_busy  = SU_FALSE;
 	flag_rx_ready = SU_FALSE;
