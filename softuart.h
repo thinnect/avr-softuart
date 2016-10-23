@@ -4,7 +4,7 @@
 #endif
 
 #ifndef SOFTUART_BAUD_RATE
-#define SOFTUART_BAUD_RATE      2400
+    #define SOFTUART_BAUD_RATE      6400
 #endif
 
 #if defined (__AVR_ATtiny25__) || defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__)
