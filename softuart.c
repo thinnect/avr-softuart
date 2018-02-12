@@ -7,7 +7,7 @@
 //
 // Adapted to AVR using avr-gcc and avr-libc
 // by Martin Thomas, Kaiserslautern, Germany
-// <eversmith@heizung-thomas.de> 
+// <eversmith@heizung-thomas.de>
 // http://www.siwawi.arubi.uni-kl.de/avr_projects
 //
 // AVR-port Version 0.4  10/2010
@@ -60,7 +60,7 @@
 //
 // ---------------------------------------------------------------------
 
-/* 
+/*
 Remarks by Martin Thomas (avr-gcc/avr-libc):
 V0.1 (2/2005)
 - stdio.h not used
@@ -81,7 +81,7 @@ V0.2 (3/2007)
 - added softuart_can_transmit()
 - Makefile based on template from WinAVR 1/2007
 - reformated
-- extended demo-application to show various methods to 
+- extended demo-application to show various methods to
   send a string from flash and RAM
 - demonstrate usage of avr-libc's stdio in demo-applcation
 - tested with ATmega644 @ 3,6864MHz system-clock using
@@ -137,7 +137,11 @@ V0.4 (10/2010)
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#include <stdbool.h>
+#if __STDC_VERSION__ >= 199901L
+	#include <stdbool.h>
+#else
+	typedef uint8_t bool;
+#endif
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -192,18 +196,22 @@ static inline bool get_rx_pin_status()
   return PIN(*rx_port) &  ( 1 << rx_pin );
 }
 
+#ifdef NESC
+AVR_ATOMIC_HANDLER(SOFTUART_T_COMP_LABEL)
+#else
 ISR(SOFTUART_T_COMP_LABEL)
+#endif
 {
 	static unsigned char flag_rx_waiting_for_stop_bit = SU_FALSE;
 	static unsigned char rx_mask;
-	
+
 	static unsigned char timer_rx_ctr;
 	static unsigned char bits_left_in_rx;
 	static unsigned char internal_rx_buffer;
-	
+
 	unsigned char start_bit, flag_in;
 	unsigned char tmp;
-	
+
 	// Transmitter Section
 	if ( flag_tx_busy == SU_TRUE ) {
 		tmp = timer_tx_ctr;
@@ -310,7 +318,7 @@ void softuart_init(volatile uint8_t *txport, uint8_t txpin,
 	flag_tx_busy  = SU_FALSE;
 	flag_rx_ready = SU_FALSE;
 	flag_rx_off   = SU_FALSE;
-	
+
 	set_tx_pin_high(); /* mt: set to high to avoid garbage on init */
 
 	io_init();
@@ -324,7 +332,7 @@ void softuart_release()
 
 static inline void idle(void)
 {
-	// timeout handling goes here 
+	// timeout handling goes here
 	// - but there is a "softuart_kbhit" in this code...
 	// add watchdog-reset here if needed
 }
@@ -350,7 +358,7 @@ char softuart_getchar( void )
 	if ( ++qout >= SOFTUART_IN_BUF_SIZE ) {
 		qout = 0;
 	}
-	
+
 	return( ch );
 }
 
@@ -364,8 +372,8 @@ void softuart_flush_input_buffer( void )
 	qin  = 0;
 	qout = 0;
 }
-	
-unsigned char softuart_transmit_busy( void ) 
+
+unsigned char softuart_transmit_busy( void )
 {
 	return ( flag_tx_busy == SU_TRUE ) ? 1 : 0;
 }
@@ -383,14 +391,14 @@ void softuart_putchar( const char ch )
 	internal_tx_buffer = ( ch << 1 ) | 0x200;
 	flag_tx_busy       = SU_TRUE;
 }
-	
+
 void softuart_puts( const char *s )
 {
 	while ( *s ) {
 		softuart_putchar( *s++ );
 	}
 }
-	
+
 void softuart_puts_p( const char *prg_s )
 {
 	char c;

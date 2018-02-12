@@ -28,7 +28,7 @@
     #define SOFTUART_CTC_MASKA         (1 << WGM01)
     #define SOFTUART_CTC_MASKB         (0)
 
-    /* "A timer interrupt must be set to interrupt at three times 
+    /* "A timer interrupt must be set to interrupt at three times
        the required baud rate." */
     #define SOFTUART_PRESCALE (8)
     // #define SOFTUART_PRESCALE (1)
@@ -39,7 +39,7 @@
     #elif (SOFTUART_PRESCALE==1)
         #define SOFTUART_PRESC_MASKA         (0)
         #define SOFTUART_PRESC_MASKB         (1 << CS00)
-    #else 
+    #else
         #error "prescale unsupported"
     #endif
 #elif defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324A__)  \
@@ -65,7 +65,7 @@
     #define SOFTUART_CTC_MASKA         (1 << WGM01)
     #define SOFTUART_CTC_MASKB         (0)
 
-    /* "A timer interrupt must be set to interrupt at three times 
+    /* "A timer interrupt must be set to interrupt at three times
        the required baud rate." */
     #define SOFTUART_PRESCALE (8)
     // #define SOFTUART_PRESCALE (1)
@@ -76,7 +76,7 @@
     #elif (SOFTUART_PRESCALE==1)
         #define SOFTUART_PRESC_MASKA         (0)
         #define SOFTUART_PRESC_MASKB         (1 << CS00)
-    #else 
+    #else
         #error "prescale unsupported"
     #endif
 
@@ -115,14 +115,47 @@
     #else
         #error "prescale unsupported"
     #endif
+#elif defined (__AVR_ATmega256RFR2__)
+
+    #define SOFTUART_T_COMP_LABEL      TIMER5_COMPA_vect
+    #define SOFTUART_T_COMP_REG        OCR5A
+    #define SOFTUART_T_CONTR_REGA      TCCR5A
+    #define SOFTUART_T_CONTR_REGB      TCCR5B
+    #define SOFTUART_T_CNT_REG         TCNT5
+    #define SOFTUART_T_INTCTL_REG      TIMSK5
+    #define SOFTUART_CMPINT_EN_MASK    (1 << OCIE5A)
+    #define SOFTUART_CTC_MASKA         (0)
+    //(1 << WGM51) | (1 << WGM50)
+    #define SOFTUART_CTC_MASKB         (1 << WGM52)
+
+    /* "A timer interrupt must be set to interrupt at three times
+       the required baud rate." */
+    //#define SOFTUART_PRESCALE (8)
+    #define SOFTUART_PRESCALE (1)
+
+    #define SOFTUART_16BIT_TIMER
+
+    #if (SOFTUART_PRESCALE == 8)
+        #define SOFTUART_PRESC_MASKA         (0)
+        #define SOFTUART_PRESC_MASKB         (1 << CS51)
+    #elif (SOFTUART_PRESCALE==1)
+        #define SOFTUART_PRESC_MASKA         (0)
+        #define SOFTUART_PRESC_MASKB         (1 << CS50)
+    #else
+        #error "prescale unsupported"
+    #endif
 #else
     #error "no defintions available for this AVR"
 #endif
 
 #define SOFTUART_TIMERTOP ( F_CPU/SOFTUART_PRESCALE/SOFTUART_BAUD_RATE/3 - 1)
 
-#if (SOFTUART_TIMERTOP > 0xff)
-    #warning "Check SOFTUART_TIMERTOP: increase prescaler, lower F_CPU or use a 16 bit timer"
+#ifdef SOFTUART_16BIT_TIMER
+    #if (SOFTUART_TIMERTOP > 0xffff)
+        #error "Check SOFTUART_TIMERTOP: increase prescaler or lower F_CPU"
+    #endif
+#elif (SOFTUART_TIMERTOP > 0xff)
+    #error "Check SOFTUART_TIMERTOP: increase prescaler, lower F_CPU or use a 16 bit timer"
 #endif
 
 #ifndef SOFTUART_IN_BUF_SIZE
@@ -159,7 +192,7 @@ void softuart_turn_rx_off( void );
 // Write a NULL-terminated string from RAM to the serial port
 void softuart_puts( const char *s );
 
-// Write a NULL-terminated string from program-space (flash) 
+// Write a NULL-terminated string from program-space (flash)
 // to the serial port. example: softuart_puts_p(PSTR("test"))
 void softuart_puts_p( const char *prg_s );
 
