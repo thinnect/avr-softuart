@@ -1,0 +1,12 @@
+#
+# Makefile extension to include all the stuff in this repository.
+# @author Raido Pahtma
+# @license MIT
+#
+
+THIS_SOFTUART_DIR := $(realpath $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))))
+
+# root of the repository, where SoftwareSerialC.nc and softuart.c/h are located.
+PFLAGS += -I$(THIS_SOFTUART_DIR)/../../..
+
+PFLAGS += -I%T/lib/softuart

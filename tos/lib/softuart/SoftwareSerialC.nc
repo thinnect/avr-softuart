@@ -1,6 +1,13 @@
 /**
  * TinyOS wrapper around avr-softuart.
  *
+ * Add to Makefile:
+ *     PFLAGS += -DSOFTUART_TX_PORT=PORTE
+ *     PFLAGS += -DSOFTUART_TX_PIN=4
+ *     PFLAGS += -DSOFTUART_RX_PORT=PORTE
+ *     PFLAGS += -DSOFTUART_RX_PIN=5
+ *     PFLAGS += -DSOFTUART_BAUD_RATE=19200
+ *
  * @author Raido Pahtma
  * @license MIT
  **/
@@ -20,8 +27,7 @@ implementation {
 
 	command error_t StdControl.start() {
 		debug1("SOFTUART_TIMERTOP %"PRIu32, (uint32_t)SOFTUART_TIMERTOP);
-		// softuart_init(&PORTD, 3, &PORTD, 2);
-		softuart_init(&PORTE, 4, &PORTE, 5);
+		softuart_init(&SOFTUART_TX_PORT, SOFTUART_TX_PIN, &SOFTUART_RX_PORT, SOFTUART_RX_PIN);
 		return SUCCESS;
 	}
 
